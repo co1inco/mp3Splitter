@@ -24,6 +24,11 @@ if imageFront == "":
 
 print("Start!")
 
+try:
+    os.mkdir("output")
+except:
+    pass
+
 splits = open("splits.txt", "r")
 
 names = []
