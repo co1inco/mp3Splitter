@@ -1,19 +1,25 @@
+
+
+filename = "QwebEpic Hits _ The Best of Album Kill la Kill OST _ 1-hour Epic Music Mix _ Epic Hybrid.mp3" 
+
+artist = u"Sawano Hiroyuki & Cyua & Benjamin Anderson & Mika Kobayashi"
+album = u"Kill la Kill [Best Off]"
+genre = "Soundtrack"
+date = "24.02.2018"
+imageFront = "cover.jpg"
+imageBack = ""
+imageDesc = "---"
+                # set type in splits.txt whith the first line: "type:(number)"
+splitType = 1	# type1: (dosn't matter) - (Name) - 00:00:00
+		# type2: 0:00:00-0:00:00 - (Name)
+                # type3: 0:00 (name) [time 0:00 to 00:00:00 possible]
+                # type4: 0:00 - (name)      -||-
+
+
+
 from pydub import AudioSegment
 import eyed3
 import os
-
-filename = "Qweb[OST] Top Fairy Tail.mp3" 
-
-artist = u"Yasuharu Takanashi"
-album = u"Sad Collection"
-genre = "Soundtrack"
-date = "31.12.2016"
-imageFront = "cover.png"
-imageBack = ""
-imageDesc = "---"
-
-splitType = 2	# type1: (dosn't matter) - (Name) - 00:00:00
-		# type2: 0:00:00-0:00:00 - (Name)
 
 if imageFront == "":
     if os.path.isfile("cover.png"):
@@ -24,20 +30,41 @@ if imageFront == "":
 
 print("Start!")
 
-try:
-    os.mkdir("output")
-except:
-    pass
-
 splits = open("splits.txt", "r")
+line = splits.readline()
+i = line.find("type:")
+if  i > -1:
+    splitType = int(line[i+5])
+    print("Type: " + line[i+5])
+else:
+    splits = open("splits.txt", "r")
+    
 
 names = []
 times = []
 
+def type3(line, splitSymbol=" "):
+    split1 = line.find(splitSymbol)
+    time = line[:split1]
+    tmpSec = time[-4:]
+    tmpMin2 = "0"
+    tmpHour = "0"
+    if split1 > 4:
+        tmpMin2 = time[0]
+        if split1 > 6:
+            tmpHour = time[-7]
+    time = "0" + str(tmpHour) + ":" + str(tmpMin2) + str(tmpSec)
+    name = line[split1+len(splitSymbol):]
+    if name.find("\n") >= 0:
+        name = name[:-1]
+    return name, time
+    
+
 for i in splits:
     print("Split for \"" + i + "\"")
+    print(splitType)
 
-    admils = 0
+    addmils = 0
 
     if splitType == 1:
         start = i.find("-")
@@ -65,10 +92,14 @@ for i in splits:
             name = i2[split2+2:]
         addmils = 500
 
+    elif splitType == 3:
+        name, time = type3(i)
+    elif splitType == 4:
+        name, time = type3(i, " - ")
 
     hour = time[0:2]  # changed 0 to 1. change back when problem
     mins = time[3:5]
-    sec  = time[6:8]    
+    sec  = time[6:8]
     hour = int(hour)
     mins = int(mins)
     sec  = int(sec)
@@ -81,16 +112,25 @@ for i in splits:
     
     names.append(name)
     times.append(milisec)
-    
+splits.close()
 
+"""    
+for i in names:
+    print(i)
+os._exit(0)
+"""
 
 song = AudioSegment.from_mp3(filename)
 
 for i, name in enumerate(names):
 
+    if name == "---": #if ffmpeg encode failes skipp it here
+        print("---SKIPING---")
+        continue
+    
     print("working on \"" + name + "\"")
 
-    if not os.path.isfile(name + ".mp3"):
+    if not os.path.isfile("output/" + name + ".mp3"):
         start = times[i]
         try:
             end = times[i+1]
@@ -127,7 +167,8 @@ for i, name in enumerate(names):
 
     file.tag.save()
 
-print("ready!")  
+#print("ready!") 
+input("READY!") 
 
 
 #for i in names:
