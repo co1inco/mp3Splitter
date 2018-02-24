@@ -36,6 +36,6 @@ Optional:
   
   -artist name, genre, releasedate, album name
   
-  (uses the same data for evry track)
+  (uses the same data for every track)
   
   (change in the script)
